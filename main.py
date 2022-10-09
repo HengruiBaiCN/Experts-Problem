@@ -17,7 +17,7 @@ def weighted_majority():
     Returns:
         _type_: _description_
     """
-    expert.expert_A
+    
     
     return None
 
