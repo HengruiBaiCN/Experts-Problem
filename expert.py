@@ -11,12 +11,12 @@ import math
 import numpy as np
 
 
-def A(day, history):
+def A(day, outcomes):
     """_summary_
-    Expert who makes a uniformly random prediction all the time
+
     Args:
-        days (_type_): _description_
-        history (_type_): _description_
+        day (_type_): _description_
+        outcomes (_type_): _description_
 
     Returns:
         _type_: _description_
@@ -24,25 +24,29 @@ def A(day, history):
     prediction = random.randint(0, 1)
     return prediction
 
+
 def B(day, outcomes):
     """_summary_
-    Expert who always predicts the same as the outcome of the previous day
+
     Args:
-        days (_type_): _description_
-        history (_type_): _description_
+        day (_type_): _description_
+        outcomes (_type_): _description_
 
     Returns:
         _type_: _description_
     """
+    if day == 0:
+        return outcomes["zero"]
     prediction = outcomes[day-1]
     return prediction
 
+
 def C(day, outcomes):
     """_summary_
-    Expert who predicts the future the outcome of the next day with accuracy of 1/2 + δ, where δ is a small constant
+
     Args:
-        days (_type_): _description_
-        history (_type_): _description_
+        day (_type_): _description_
+        outcomes (_type_): _description_
 
     Returns:
         _type_: _description_
@@ -53,10 +57,10 @@ def C(day, outcomes):
     if correct != 1:
         wrong = 1
         pass
-    prediction = choices([wrong, correct], [0.5 - theta, 0.5 + theta])
+    prediction = choices([wrong, correct], [0.5 - theta, 0.5 + theta])[0]
     return prediction
 
-def D(days, history):
+def D(day, outcomes):
     """_summary_
     My own expert: pessimist, believe the stock market will go down forever.
     Args:
@@ -69,8 +73,34 @@ def D(days, history):
     prediction = 0
     return prediction
 
+def call_experts(num, d, o):
+    """_summary_
 
-def adversary(days, epsilon):
+    Args:
+        num (_type_): _description_
+        d (_type_): _description_
+        o (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    res = 0
+    if num == 0:
+        res = A(d, o)
+        pass
+    elif num == 1:
+        res = B(d, o)
+        pass
+    elif num == 2:
+        res = C(d, o)
+        pass
+    else:
+        res = D(d, o)
+        pass
+    return res
+
+
+def adversary(days, epsilon, experts):
     """_summary_
     Generate the outcome of each day based on a uniform distribution
     Args:
@@ -80,8 +110,17 @@ def adversary(days, epsilon):
     Returns:
         _type_: _description_
     """
+    costs = dict()
     outcomes = dict()
-    for t in range(1, days):
+    day0 = random.randint(0, 1)
+    outcomes["zero"] = day0
+    for t in range(days):
         res =random.randint(0, 1)
+        cost = []
         outcomes[t] = res
-    return None
+        for i in range(experts):
+            cost.append(random.uniform(-1, 1))
+            pass
+        costs[t] = cost
+        pass
+    return costs, outcomes
