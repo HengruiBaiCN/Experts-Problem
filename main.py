@@ -16,9 +16,9 @@ def wma(days, outcomes, experts):
     """_summary_
 
     Args:
-        days (_type_): _description_
-        outcomes (_type_): _description_
-        experts (_type_): _description_
+        days (int): the number of days
+        outcomes (dictionary): the real trend/outcomes in each day
+        experts (int): the number of experts
 
     Returns:
         _type_: _description_
@@ -31,68 +31,63 @@ def wma(days, outcomes, experts):
         mistakes[i] = 0
         pass
     
-    # calculate the accuray of WMU
-    mistakes["alg"] = 0
+    # count the number of mistakes the alg make
+    alg_mistakes = 0
     
     for day in range(1, days):
-        # collect the prediction of each expert
-        yes = 0
-        no = 0
+        # collect the prediction of each expert and calculate the majority vote
+        yes, no = 0, 0
         for i in range(experts):
             # save prediction_
             predict = expert.call_experts(i, day, outcomes)
+            # check correctness
+            if predict != outcomes[day]:
+                weights[i] = weights[i]/2
+                mistakes[i] += 1
+                pass
             
-            # check prediction
+            # calculate majority voter
             if(predict == 1):
-                # increase the votes of yes
                 yes += weights[i]
-                # check correctness
-                if predict != outcomes[day]:
-                    weights[i] = weights[i]/2
-                    mistakes[i] += 1
-                    pass
                 pass
             else:
-                # increase the votes of no
                 no += weights[i]
-                # check correctness
-                if predict != outcomes[day]:
-                    weights[i] = weights[i]/2
-                    mistakes[i] += 1
-                    pass
                 pass
             pass
         
-        # aggregates the prediction and make decioson based on a majority vote
+        # aggregates the prediction and make decision based on a majority vote
         decision = 0
         if yes > no:
             decision = 1
             pass
         if outcomes[day] != decision:
-            mistakes["alg"] += 1
+            alg_mistakes += 1
             pass
-        print(weights)
+        # print(weights)
         pass
-    regret = mistakes["alg"] - min(mistakes.values())
-    return mistakes["alg"], regret
+    
+    regret = alg_mistakes - min(mistakes.values())
+    return alg_mistakes, regret
 
 
 
 def mwu(d, c, e, epsilon):
     """_summary_
-
+    
     Args:
-        d (_type_): _description_
-        c (_type_): _description_
-        e (_type_): _description_
-        epsilon (_type_): _description_
+        d (int): the number of days
+        c (dictionary): the dictionary that save the a list of cost of following each expert i on different day
+        e (int): the number of experts
+        epsilon (float): a constant to change the weight of each expert
 
     Returns:
-        _type_: _description_
+        float, float: the total expected cost of the alg and the regret of the alg
     """
-    # initial the weight and probability distribution
+    # a dictionay to save the expected cost of the alg in each day
     expected_costs = dict()
+    # a dictionary to save the total cost of each expert
     experts_costs = dict()
+    # initial the weight and probability distribution
     weights = dict()
     distributions = dict()
     for i in range(e):

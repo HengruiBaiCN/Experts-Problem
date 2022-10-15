@@ -15,11 +15,11 @@ def A(day, outcomes):
     """_summary_
 
     Args:
-        day (_type_): _description_
-        outcomes (_type_): _description_
+        day (int): the current day
+        outcomes (dictionary): the real trend/outcomes in each day
 
     Returns:
-        _type_: _description_
+        int: the trend: 0 or 1
     """
     prediction = random.randint(0, 1)
     return prediction
@@ -29,11 +29,11 @@ def B(day, outcomes):
     """_summary_
 
     Args:
-        day (_type_): _description_
-        outcomes (_type_): _description_
+        day (int): the current day
+        outcomes (dictionary): the real trend/outcomes in each day
 
     Returns:
-        _type_: _description_
+        int: the trend: 0 or 1
     """
     if day == 0:
         return outcomes["zero"]
@@ -45,11 +45,11 @@ def C(day, outcomes):
     """_summary_
 
     Args:
-        day (_type_): _description_
-        outcomes (_type_): _description_
+        day (int): the current day
+        outcomes (dictionary): the real trend/outcomes in each day
 
     Returns:
-        _type_: _description_
+        int: the trend: 0 or 1
     """
     theta = 0.1
     correct = outcomes[day]
@@ -62,36 +62,36 @@ def C(day, outcomes):
 
 def D(day, outcomes):
     """_summary_
-    My own expert: pessimist, believe the stock market will go down forever.
+    My own experts: pessimist, believe the market will keep going down
     Args:
-        days (_type_): _description_
-        history (_type_): _description_
+        day (int): the current day
+        outcomes (dictionary): the real trend/outcomes in each day
 
     Returns:
-        _type_: _description_
+        int: the trend: 0 or 1
     """
     prediction = 0
     return prediction
 
-def call_experts(num, d, o):
+def call_experts(e, d, o):
     """_summary_
 
     Args:
-        num (_type_): _description_
-        d (_type_): _description_
-        o (_type_): _description_
+        num (int): index correspond to different expert
+        d (int): the current day
+        o (dictionary): the real trend/outcomes in each day
 
     Returns:
-        _type_: _description_
+        int: the prediction of one of experts
     """
     res = 0
-    if num == 0:
+    if e == 0:
         res = A(d, o)
         pass
-    elif num == 1:
+    elif e == 1:
         res = B(d, o)
         pass
-    elif num == 2:
+    elif e == 2:
         res = C(d, o)
         pass
     else:
@@ -100,12 +100,12 @@ def call_experts(num, d, o):
     return res
 
 
-def adversary(days, epsilon, experts):
+def adversary(days, experts):
     """_summary_
     Generate the outcome of each day based on a uniform distribution
     Args:
         days (_type_): _description_
-        epsilon (_type_): _description_
+        experts (_type_): _description_
 
     Returns:
         _type_: _description_
