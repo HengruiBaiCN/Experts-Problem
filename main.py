@@ -1,5 +1,5 @@
 from ast import Pow
-from cmath import log
+from cmath import e, log
 import random
 from itertools import chain, combinations
 from re import A
@@ -33,13 +33,16 @@ def wma(days, outcomes, experts):
     
     # count the number of mistakes the alg make
     alg_mistakes = 0
+    # print(list(range(days)))
     
-    for day in range(1, days):
+    for day in range(days):
         # collect the prediction of each expert and calculate the majority vote
         yes, no = 0, 0
         for i in range(experts):
             # save prediction_
             predict = expert.call_experts(i, day, outcomes)
+            # print(outcomes)
+            # print(predict)
             # check correctness
             if predict != outcomes[day]:
                 weights[i] = weights[i]/2
@@ -67,11 +70,13 @@ def wma(days, outcomes, experts):
         pass
     
     regret = alg_mistakes - min(mistakes.values())
-    return alg_mistakes, regret
+    mistake_bound = 2.41*(min(mistakes.values())+math.log(experts))
+    regret_bound = 1.41*(min(mistakes.values())+math.log(experts))
+    return alg_mistakes, regret, mistake_bound, regret_bound
 
 
 
-def mwu(d, c, e, epsilon):
+def mwu(days, c, experts, epsilon):
     """_summary_
     
     Args:
@@ -90,18 +95,18 @@ def mwu(d, c, e, epsilon):
     # initial the weight and probability distribution
     weights = dict()
     distributions = dict()
-    for i in range(e):
+    for i in range(experts):
         weights[i] = 1
         experts_costs[i] = 0
         pass
-    for i in range(e):
+    for i in range(experts):
         distributions[i] = weights[i]/sum(weights.values())
         pass
     
     # calculate the expected cost in each day
-    for day in range(d):
+    for day in range(days):
         expected_costs[day] = 0
-        for i in range(e):
+        for i in range(experts):
             # collect the cost of following expert i on day t
             m = c[day][i]
             # calculate the expected cost of following expert i on day t
@@ -116,7 +121,7 @@ def mwu(d, c, e, epsilon):
             pass
         
         # update the distribution of each expert in next day
-        for i in range(e):
+        for i in range(experts):
             distributions[i] = weights[i]/sum(weights.values())
             pass
         # print(distributions)
@@ -124,24 +129,115 @@ def mwu(d, c, e, epsilon):
     
     total_costs = sum(expected_costs.values())
     regret = total_costs - min(experts_costs.values())
-    print(experts_costs)
-    return total_costs, regret
+    cost_bound = min(experts_costs.values()) + math.log(experts)/epsilon + epsilon*days
+    regret_bound = math.log(experts)/epsilon + epsilon*days
+    return total_costs, regret, cost_bound, regret_bound
 
 
 
 if __name__ == "__main__":
-    num_of_days = 20
-    epsilon = 0.5
     experts_num = 4
-    # generate problem instances
-    costs, outcomes = expert.adversary(num_of_days, epsilon, experts_num)
-    # print(costs)
-    print(outcomes)
-    x1, y1 = wma(num_of_days, outcomes, experts_num)
-    print(x1, y1)
-    x2, y2 = mwu(num_of_days, costs, experts_num, epsilon)
-    print(x2, y2)
+    x_axis = []
+    wma_mistakes, wma_regret, mwu_costs, mwu_regrets = [], [], [], []
+    wma_mistakes_bound, wma_regret_bound, mwu_costs_bound, mwu_regrets_bound = [], [], [], []
+
+    # set epsilon = 0.1, change day
+    num_of_days = 10
+    while num_of_days < 100:
+        
+        x_axis.append(num_of_days)
+        
+        # generate problem instances
+        costs, outcomes = expert.adversary(num_of_days, experts_num)
+        
+        a, b, c, d = wma(num_of_days, outcomes, experts_num)
+        wma_mistakes.append(a)
+        wma_regret.append(b)
+        wma_mistakes_bound.append(c)
+        wma_regret_bound.append(d)
+        
+        a1, b1, c1, d1 = mwu(num_of_days, costs, experts_num, 0.1)
+        mwu_costs.append(a1)
+        mwu_regrets.append(b1)
+        mwu_costs_bound.append(c1)
+        mwu_regrets_bound.append(d1)
+        
+        num_of_days += 1
+        pass
     
+    # plot 1
+    plt.plot(x_axis, wma_mistakes, label="real mistakes")
+    plt.plot(x_axis, wma_mistakes_bound, label="bounds")
+    plt.xlabel('x - days')
+    plt.ylabel('y - mistakes')
+    plt.title('weighted majority algorithm - mistakes')
+    plt.legend()
+    plt.show()
+    
+    # plot 2
+    plt.plot(x_axis, wma_regret, label="real regrets")
+    plt.plot(x_axis, wma_regret_bound, label="bounds")
+    plt.xlabel('x - days')
+    plt.ylabel('y - regrets')
+    plt.title('weighted majority algorithm - regrets')
+    plt.legend()
+    plt.show()
+    
+    # plot 3
+    plt.plot(x_axis, mwu_costs, label="total expected costs")
+    plt.plot(x_axis, mwu_costs_bound, label="bounds")
+    plt.xlabel('x - days')
+    plt.ylabel('y - costs')
+    plt.title('multiplicative weights update algorithm - costs')
+    plt.legend()
+    plt.show()
+    
+    # plot 4
+    plt.plot(x_axis, mwu_regrets, label="real regrets")
+    plt.plot(x_axis, mwu_regrets_bound, label="bounds")
+    plt.xlabel('x - days')
+    plt.ylabel('y - regrets')
+    plt.title('multiplicative weights update algorithm - regrets')
+    plt.legend()
+    plt.show()
+    
+    
+    # set day = 10, change epsilon, clean the data list
+    epsilon = 0.1
+    x_axis = []
+    mwu_costs, mwu_regrets, mwu_costs_bound, mwu_regrets_bound = [], [], [], []
+    while epsilon < 1:
+        
+        x_axis.append(epsilon)
+        # generate problem instances
+        costs, outcomes = expert.adversary(10, experts_num)
+        
+        a1, b1, c1, d1 = mwu(10, costs, experts_num, epsilon)
+        mwu_costs.append(a1)
+        mwu_regrets.append(b1)
+        mwu_costs_bound.append(c1)
+        mwu_regrets_bound.append(d1)
+        
+        epsilon += 0.05
+        pass
+    
+    # plot 5
+    plt.plot(x_axis, mwu_costs, label="total expected costs")
+    plt.plot(x_axis, mwu_costs_bound, label="bounds")
+    plt.xlabel('x - epsilon')
+    plt.ylabel('y - costs')
+    plt.title('multiplicative weights update algorithm - costs')
+    plt.legend()
+    plt.show()
+    
+    # plot 6
+    plt.plot(x_axis, mwu_regrets, label="real regrets")
+    plt.plot(x_axis, mwu_regrets_bound, label="bounds")
+    plt.xlabel('x - epsilon')
+    plt.ylabel('y - regrets')
+    plt.title('multiplicative weights update algorithm - regrets')
+    plt.legend()
+    plt.show()
 
 
     

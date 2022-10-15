@@ -51,7 +51,7 @@ def C(day, outcomes):
     Returns:
         int: the trend: 0 or 1
     """
-    theta = 0.1
+    theta = 0.05
     correct = outcomes[day]
     wrong = 0
     if correct != 1:
