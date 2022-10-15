@@ -104,7 +104,7 @@ def mwu(d, c, e, epsilon):
         pass
     
     # calculate the expected cost in each day
-    for day in range(1, d):
+    for day in range(d):
         expected_costs[day] = 0
         for i in range(e):
             # collect the cost of following expert i on day t
@@ -112,7 +112,7 @@ def mwu(d, c, e, epsilon):
             # calculate the expected cost of following expert i on day t
             expected_expert_cost = distributions[i] * m
             # sum the expected cost of following each expert on day t
-            expected_costs[d] = expected_expert_cost
+            expected_costs[day] += expected_expert_cost
             # update the weight
             weights[i] = weights[i] * (math.exp(-epsilon*m))
             
