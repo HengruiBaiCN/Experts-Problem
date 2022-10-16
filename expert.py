@@ -51,7 +51,7 @@ def C(day, outcomes):
     Returns:
         int: the trend: 0 or 1
     """
-    theta = 0.05
+    theta = 0.2
     correct = outcomes[day]
     wrong = 0
     if correct != 1:
@@ -70,7 +70,7 @@ def D(day, outcomes):
     Returns:
         int: the trend: 0 or 1
     """
-    prediction = 0
+    prediction = choices([0, 1], [0.9, 0.1])[0]
     return prediction
 
 def call_experts(e, d, o):
